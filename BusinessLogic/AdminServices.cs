@@ -22,7 +22,7 @@ namespace BusinessLogic
                 if (bank.Key == bankName)
                 {
 
-                    BankStaff newStaff = new BankStaff(userName, password, bank.Value.BankId, bankName);
+                    Staff newStaff = new Staff(userName, password, bank.Value.BankId, bankName);
                     bank.Value.Staff.Add(newStaff);
                     return 1;
 

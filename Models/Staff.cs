@@ -6,16 +6,11 @@ using System.Threading.Tasks;
 
 namespace Models
 {
-    public class BankStaff
+    public class Staff:User
     {
-        public string UserName;
-        public string Password;
-        public string BankId;
-        public string BankName;
-
-
-
-        public BankStaff(string userName, string password, string bankId, string bankName)
+       
+        
+        public Staff(string userName, string password, string bankId, string bankName)
         {
             this.UserName = userName;
             this.Password = password;

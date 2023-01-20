@@ -7,18 +7,19 @@ using System.Text;
 using System.Threading.Tasks;
 
 
+
 namespace BusinessLogic
 {
-    public class AccountHolderServices
+    public class CustomerServices
     {
 
-        public static int DepositAmount(int depositAmount, AccountHolder currentHolder)
+        public static int DepositAmount(int depositAmount, Customer currentHolder)
         {
             if (depositAmount <= 0) return 0;
             currentHolder.Balance = currentHolder.Balance + depositAmount;
             return 1;
         }
-        public static int WithDrawAmount(int withDrawAmount, AccountHolder currentHolder)
+        public static int WithDrawAmount(int withDrawAmount, Customer currentHolder)
         {
             if (withDrawAmount > currentHolder.Balance)
             {
@@ -31,14 +32,22 @@ namespace BusinessLogic
                 return 1;
             }
         }
-        public static int TransferFunds(int amount, string transferAccount, string transferBankId, AccountHolder currentHolder, string transferType, Bank senderBankObject, Bank recieverBankObject)
+        
+
+        public static int TransferFunds(Customer sender,Customer reciever,double amount,string transferType,Bank senderBankObject, Bank recieverBankObject)
         {
+            if (!ValidateUser(recieverBankObject, reciever))
+            {
+                return 0;
+            }
             double totalAmount;
+
+            string transactionID;
 
 
             if (transferType == "1")
             {
-                if (currentHolder.BankId != transferBankId)
+                if (sender.BankId != reciever.BankId)
                 {
                     totalAmount = (senderBankObject.RTGSChargesForOther * amount) + amount;
                 }
@@ -49,7 +58,7 @@ namespace BusinessLogic
             }
             else
             {
-                if (currentHolder.BankId != transferBankId)
+                if (sender.BankId != reciever.BankId)
                 {
                     totalAmount = (senderBankObject.IMPSChargesForOther * amount) + amount;
 
@@ -61,7 +70,7 @@ namespace BusinessLogic
             }
 
 
-            if (totalAmount > currentHolder.Balance)
+            if (totalAmount > sender.Balance)
             {
 
                 return 0;
@@ -73,22 +82,42 @@ namespace BusinessLogic
                 {
                     double senderExchangeValue = Bank.AcceptedCurrencies[senderBankObject.Currency] * amount;
                     double recieverExchangeValue = senderExchangeValue / Bank.AcceptedCurrencies[recieverBankObject.Currency];
-                    Transaction transfer = new Transaction(currentHolder.AccountId, amount, recieverExchangeValue, currentHolder.BankId, transferAccount, transferBankId);
-                    currentHolder.Transactions.Add(transfer);
-
-                    currentHolder.Balance -= totalAmount;
+                    transactionID = "TXN" + sender.BankId + sender.AccountId;
+                    Transaction transfer = new Transaction(sender, reciever, amount, recieverExchangeValue,transactionID);
+                    sender.Transactions.Add(transfer);
+                    sender.Balance -= totalAmount;
+                    reciever.Transactions.Add(transfer);
+                    reciever.Balance += recieverExchangeValue;
 
                 }
-
 
                 else
                 {
-                    Transaction transfer = new Transaction(currentHolder.AccountId, amount, amount, currentHolder.BankId, transferAccount, transferBankId);
-                    currentHolder.Transactions.Add(transfer);
-                    currentHolder.Balance -= totalAmount;
+                    transactionID = "TXN" + sender.BankId + sender.AccountId;
+                    Transaction transfer = new Transaction(sender, amount, reciever,transactionID);
+                    sender.Transactions.Add(transfer);
+                    sender.Balance -= totalAmount;
+                    reciever.Transactions.Add(transfer) ;
+                    reciever.Balance += amount;
+
                 }
                 return 1;
             }
+        }
+
+
+        public static Boolean ValidateUser(Bank checkBank,Customer checkCustomer)
+        {
+            foreach(Customer customer in checkBank.AllAccounts)
+            {
+                if(customer.AccountId.Equals(checkCustomer.AccountId))
+                {
+                    return true;
+                }
+
+            }
+            return false;
+
         }
 
 

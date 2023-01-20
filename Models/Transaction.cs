@@ -8,60 +8,33 @@ namespace Models
 {
     public class Transaction
     {
-        public string TransactionId;
-        public string ReceiverId;
-        public string BankId;
-        public double SentAmount;
-        public double RecievedAmount;
-        public string ReceiverBankId;
-        public string SenderAccountId;
+        public string TransactionId { get; set; }
+        public double SentAmount { get; set; }
+        public double RecievedAmount { get; set; }
+        public Customer Reciever { get;set; }
+        public Customer Sender { get; set; }
 
 
-        public Transaction(string transactionId, string senderAccountId, string bankId, double sentAmount, double recievedAmount)
+
+        public Transaction(Customer sender, Customer reciever,double sentAmount,double recievedAmount,string transactionId)
         {
+            this.Sender=sender;
+            this.Reciever = reciever;
+            this.SentAmount= sentAmount;
+            this.RecievedAmount= recievedAmount;
             this.TransactionId = transactionId;
-            this.SenderAccountId = senderAccountId;
-            this.BankId = bankId;
-            this.SentAmount = sentAmount;
-            this.RecievedAmount = recievedAmount;
-
-
         }
 
-        public Transaction(string senderAccountId, double sentAmount, double recievedAmount, string bankId, string receiverId, string receiverBankId)
+        public Transaction(Customer sender,double amount,Customer reciever,string transactionId)
         {
-
-
-
-            foreach (var checkBank in Admin.AllBanks)
-            {
-                if (checkBank.Value.BankId == receiverBankId)
-                {
-                    foreach (AccountHolder checkAccount in checkBank.Value.AllAccounts)
-                    {
-                        if (checkAccount.AccountId.Equals(receiverId))
-                        {
-                            this.SenderAccountId = senderAccountId;
-                            this.TransactionId = "TXN" + bankId + senderAccountId;
-                            this.SentAmount = sentAmount;
-                            this.ReceiverId = receiverId;
-                            this.ReceiverBankId = receiverBankId;
-                            this.RecievedAmount = recievedAmount;
-                            checkAccount.Balance += recievedAmount;
-                            Transaction recieverTransactionObject = new Transaction(this.TransactionId, senderAccountId, bankId, sentAmount, recievedAmount);
-                            checkAccount.Transactions.Add(recieverTransactionObject);
-
-
-                            break;
-
-                        }
-                    }
-
-                }
-            }
-
-
+            this.Sender=sender;
+            this.Reciever= reciever;
+            this.SentAmount= amount;
+            this.RecievedAmount =amount;
+            this.TransactionId = transactionId;
         }
+
+        
 
 
     }

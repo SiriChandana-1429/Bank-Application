@@ -8,9 +8,9 @@ namespace Models
 {
     public class Bank
     {
-        public string? BankName;
-        public string? Location;
-        public string? BankId;
+        public string BankName { get; set; }
+        public string? Location { get; set; }
+        public string? BankId { get; set; }
 
         public double RTGSChargesForSame = 0;
         public double RTGSChargesForOther = 0.02;
@@ -36,7 +36,7 @@ namespace Models
 
         }
 
-        public List<AccountHolder> AllAccounts = new List<AccountHolder>();
-        public List<BankStaff> Staff = new List<BankStaff>();
+        public List<Customer> AllAccounts = new List<Customer>();
+        public List<Staff> Staff = new List<Staff>();
     }
 }
