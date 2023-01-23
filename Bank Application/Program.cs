@@ -33,7 +33,7 @@ for (; ; )
                 var checkForUser = from name in currentBank.Value.AllAccounts
                                    where name.UserName.Equals(UserName) && name.Password.Equals(password)
                                    select name;
-                if (checkForUser.Count() > 0)
+                if (checkForUser.Any())
                 {
                     Console.WriteLine("                             1.Deposit Amount");
                     Console.WriteLine("                             2.Withdraw Amount");
@@ -61,7 +61,7 @@ for (; ; )
 
                                 int value = CustomerServices.WithDrawAmount(Convert.ToInt32(withDrawamount), currentHolder);
                                 if (value == 0) Console.WriteLine("Insufficient Funds..!!");
-                                else Console.WriteLine("Updated Balance: "+currentHolder.Balance);
+                                else Console.WriteLine("Updated Balance: " + currentHolder.Balance);
                             }
 
 
@@ -69,13 +69,13 @@ for (; ; )
                         case "3":
                             foreach (Customer currentHolder in checkForUser)
                             {
-                                
+
                                 Console.WriteLine("Enter Reciever's Bank Name:");
                                 string recieverBankName = Console.ReadLine();
                                 Console.WriteLine("Enter Account ID to which you want to transfer funds:");
                                 string transferAccount = Console.ReadLine();
-                                var checkForReciever = Admin.AllBanks[recieverBankName].AllAccounts.Where(acc=>acc.AccountId.Equals(transferAccount));
-                                if(checkForReciever.Count()==0) { 
+                                var checkForReciever = Admin.AllBanks[recieverBankName].AllAccounts.Where(acc => acc.AccountId.Equals(transferAccount));
+                                if (!checkForReciever.Any()) {
                                     Console.WriteLine("Account is not found..!!");
                                     break;
                                 }
@@ -113,9 +113,13 @@ for (; ; )
                             break;
                     }
                 }
+                else
+                {
+                    Console.WriteLine("Account Holder not found.!!");
+                    break;
+                }
 
-
-                //Console.WriteLine("                             User not found..!!");
+               
 
 
 
@@ -134,149 +138,152 @@ for (; ; )
                 Console.WriteLine("Enter Password:");
                 string staffPassword = Console.ReadLine();
 
-
-                foreach (var currentBank in Admin.AllBanks)
+                var checkForBankStaff = from bank in Admin.AllBanks
+                                        where bank.Key.Equals(staffBank)
+                                        select bank;
+                if(!checkForBankStaff.Any())
                 {
+                    Console.WriteLine("Entered Bank name not found..!!");
+                    break;
+                }
 
-                    if (currentBank.Key.Equals(staffBank))
+
+
+                var checkForStaff = from name in checkForBankStaff.ElementAt(0).Value.Staff
+                                    where name.UserName.Equals(staffUserName) && name.Password.Equals(staffPassword)
+                                    select name;
+                if (!checkForStaff.Any())
+                {
+                    Console.WriteLine("Staff not found.");
+                }
+                else
+                {
+                    foreach (Staff currentStaff in checkForStaff)
                     {
 
-                        var checkForStaff = from name in currentBank.Value.Staff
-                                            where name.UserName.Equals(staffUserName) && name.Password.Equals(staffPassword)
-                                            select name;
-                        if (checkForStaff.Count() == 0)
-                        {
-                            Console.WriteLine("Staff not found.");
-                        }
-                        else
-                        {
-                            foreach (Staff currentStaff in checkForStaff)
-                            {
+                        Console.Write("Your Bank ID is:");
+                        Console.WriteLine(checkForBankStaff.ElementAt(0).Value.BankId);
+                        Console.WriteLine("--------------------*****------------------------");
+                        Console.WriteLine("--------------------*****------------------------");
+                        Console.WriteLine("            1.Create new Account");
+                        Console.WriteLine("            2.Update/Delete account");
+                        Console.WriteLine("            3.Add new accepted currency");
+                        Console.WriteLine("            4.Add new service charges for same bank account");
+                        Console.WriteLine("            5.Add new service charges for other bank account");
+                        Console.WriteLine("            6.View account transaction");
+                        Console.WriteLine("            7.Revert transaction");
 
-                                Console.Write("Your Bank ID is:");
-                                Console.WriteLine(currentBank.Value.BankId);
-                                Console.WriteLine("--------------------*****------------------------");
-                                Console.WriteLine("--------------------*****------------------------");
-                                Console.WriteLine("            1.Create new Account");
-                                Console.WriteLine("            2.Update/Delete account");
-                                Console.WriteLine("            3.Add new accepted currency");
-                                Console.WriteLine("            4.Add new service charges for same bank account");
-                                Console.WriteLine("            5.Add new service charges for other bank account");
-                                Console.WriteLine("            6.View account transaction");
-                                Console.WriteLine("            7.Revert transaction");
-
-                                string action = Console.ReadLine();
-                                switch (action)
+                        string action = Console.ReadLine();
+                        switch (action)
+                        {
+                            case "1":
+                                Console.WriteLine("Enter First Name:");
+                                string firstName = Console.ReadLine();
+                                Console.WriteLine("Enter Last Name:");
+                                string lastName = Console.ReadLine();
+                                Console.WriteLine("Enter Email:");
+                                string email = Console.ReadLine();
+                                Console.WriteLine("Enter Password:");
+                                string accountPassword = Console.ReadLine();
+                                Console.WriteLine("Bank ID:");
+                                string bankId = Console.ReadLine();
+                                string returnValue = StaffServices.CreateAccount(checkForBankStaff.ElementAt(0).Key, firstName, lastName, email, accountPassword, bankId, currentStaff);
+                                if (returnValue == "0") Console.WriteLine("Invalid bank Id given.");
+                                else
                                 {
-                                    case "1":
-                                        Console.WriteLine("Enter First Name:");
-                                        string firstName = Console.ReadLine();
-                                        Console.WriteLine("Enter Last Name:");
-                                        string lastName = Console.ReadLine();
-                                        Console.WriteLine("Enter Email:");
-                                        string email = Console.ReadLine();
-                                        Console.WriteLine("Enter Password:");
-                                        string accountPassword = Console.ReadLine();
-                                        Console.WriteLine("Bank ID:");
-                                        string bankId = Console.ReadLine();
-                                        string returnValue = StaffServices.CreateAccount(currentBank.Key, firstName, lastName, email, accountPassword, bankId, currentStaff);
-                                        if (returnValue == "0") Console.WriteLine("Invalid bank Id given.");
-                                        else
-                                        {
-                                            Console.WriteLine("                         *Account created*");
-                                            Console.WriteLine("                   AccountId:{0}", returnValue);
-                                        }
-                                        break;
-                                    case "2":
-                                        Console.WriteLine("Enter account ID that you want to delete:");
-                                        string delAccount = Console.ReadLine();
-                                        int returnValueInt = StaffServices.DeleteAccount(delAccount, currentStaff);
-                                        if (returnValueInt == 1)
-                                            Console.WriteLine("Account Deleted..!!");
-                                        else Console.WriteLine("Invalid account ID given");
-                                        break;
-                                    case "3":
-                                        Console.WriteLine("Enter the new accepted currency:");
-                                        string newCurrency = Console.ReadLine();
-                                        Console.WriteLine("Enter the value of the new currency:");
-                                        int newCurrencyValue = Convert.ToInt32(Console.ReadLine());
-                                        returnValueInt = StaffServices.AddNewCurrency(newCurrency.ToUpper(), newCurrencyValue);
-                                        if (returnValueInt == 0) Console.WriteLine("Currency already exists");
-                                        else if (returnValueInt == 1) Console.WriteLine("Value should be greater than 0");
-                                        else Console.WriteLine("Currency added");
-                                        break;
-                                    case "4":
-                                        Console.WriteLine("Enter new RTGS Charges:");
-                                        double newRTGSCharges = Convert.ToDouble(Console.ReadLine());
-                                        Console.WriteLine("Enter new IMPS Charges:");
-                                        double newIMPSCharges = Convert.ToDouble(Console.ReadLine());
-                                        StaffServices.UpdateChargesForSameBank(currentBank.Value, newRTGSCharges, newIMPSCharges);
-                                        break;
-                                    case "5":
-                                        Console.WriteLine("Enter new RTGS Charges:");
-                                        newRTGSCharges = Convert.ToDouble(Console.ReadLine());
-                                        Console.WriteLine("Enter new IMPS Charges:");
-                                        newIMPSCharges = Convert.ToDouble(Console.ReadLine());
-                                        StaffServices.UpdateChargesForOtherBank(currentBank.Value, newRTGSCharges, newIMPSCharges);
-
-                                        break;
-                                    case "6":
-                                        Console.WriteLine("Enter account ID to view transaction:");
-                                        string viewAccountTransaction = Console.ReadLine();
-
-
-                                        foreach (var bank in Admin.AllBanks)
-                                        {
-                                            if (bank.Value.BankId == currentStaff.BankId)
-                                            {
-                                                foreach (Customer currentAccount in bank.Value.AllAccounts)
-                                                {
-
-                                                    Console.WriteLine("SenderId                 Amount                 ReceiverID                  Transaction ID");
-                                                    foreach (Transaction transaction in currentAccount.Transactions)
-                                                    {
-                                                        Console.WriteLine(currentAccount.AccountId + "                  " + transaction.SentAmount + "          " + transaction.Reciever.AccountId + "                      " + transaction.TransactionId);
-                                                    }
-                                                }
-
-                                            }
-
-                                        }
-                                        break;
-                                    case "7":
-                                        Console.WriteLine("Enter the account Id whose transaction you want to revert?");
-                                        string senderAccountId = Console.ReadLine();
-                                        var checkForSender = currentBank.Value.AllAccounts.Where(acc => acc.AccountId.Equals(senderAccountId));
-                                        if(checkForSender.Count()==0)
-                                        {
-                                            Console.WriteLine("Invalid Sender ID given");
-                                            break;
-                                        }
-                                        Console.WriteLine("Enter the reciever account Id you want to revert?");
-                                        string recieverAccountId = Console.ReadLine();
-                                        Console.WriteLine("Enter reciever's Bank ID:");
-                                        string reciverBankId = Console.ReadLine();
-                                        Console.WriteLine("Enter the transaction ID that you want to revert?");
-                                        string revertTransactionId = Console.ReadLine();
-
-                                        StaffServices.RevertTransaction(checkForSender.ElementAt(0), revertTransactionId, currentStaff,currentBank.Value);
-                                        break;
-
-                                    default:
-                                        Console.WriteLine("Invalid choice");
-                                        break;
-
+                                    Console.WriteLine("                         *Account created*");
+                                    Console.WriteLine("                   AccountId:{0}", returnValue);
                                 }
                                 break;
-                            }
+                            case "2":
+                                Console.WriteLine("Enter Account ID that you want to delete:");
+                                string delAccount = Console.ReadLine();
+                                int returnValueInt = StaffServices.DeleteAccount(delAccount, currentStaff);
+                                if (returnValueInt == 1)
+                                    Console.WriteLine("Account Deleted..!!");
+                                else Console.WriteLine("Invalid account ID given");
+                                break;
+                            case "3":
+                                Console.WriteLine("Enter the new accepted currency:");
+                                string newCurrency = Console.ReadLine();
+                                Console.WriteLine("Enter the value of the new currency:");
+                                int newCurrencyValue = Convert.ToInt32(Console.ReadLine());
+                                returnValueInt = StaffServices.AddNewCurrency(newCurrency.ToUpper(), newCurrencyValue);
+                                if (returnValueInt == 0) Console.WriteLine("Currency already exists");
+                                else if (returnValueInt == 1) Console.WriteLine("Value should be greater than 0");
+                                else Console.WriteLine("Currency added");
+                                break;
+                            case "4":
+                                Console.WriteLine("Enter new RTGS Charges:");
+                                double newRTGSCharges = Convert.ToDouble(Console.ReadLine());
+                                Console.WriteLine("Enter new IMPS Charges:");
+                                double newIMPSCharges = Convert.ToDouble(Console.ReadLine());
+                                StaffServices.UpdateChargesForSameBank(checkForBankStaff.ElementAt(0).Value, newRTGSCharges, newIMPSCharges);
+                                break;
+                            case "5":
+                                Console.WriteLine("Enter new RTGS Charges:");
+                                newRTGSCharges = Convert.ToDouble(Console.ReadLine());
+                                Console.WriteLine("Enter new IMPS Charges:");
+                                newIMPSCharges = Convert.ToDouble(Console.ReadLine());
+                                StaffServices.UpdateChargesForOtherBank(checkForBankStaff.ElementAt(0).Value, newRTGSCharges, newIMPSCharges);
+
+                                break;
+                            case "6":
+                                Console.WriteLine("Enter account ID to view transaction:");
+                                string viewAccountTransaction = Console.ReadLine();
+                                var checkForBank = from bank in Admin.AllBanks
+                                                   where bank.Value.BankId == checkForBankStaff.ElementAt(0).Value.BankId
+                                                   select bank;
+
+                                if(checkForBank == null)
+                                {
+                                    Console.WriteLine("This bank staff is not authorised to view this account transaction history..");
+                                    break;
+                                }
+                                foreach (Customer currentAccount in checkForBank.ElementAt(0).Value.AllAccounts)
+                                {
+
+                                    Console.WriteLine("SenderId                 Amount                 ReceiverID                  Transaction ID");
+                                    foreach (Transaction transaction in currentAccount.Transactions)
+                                    {
+                                        Console.WriteLine(currentAccount.AccountId + "                  " + transaction.SentAmount + "          " + transaction.Reciever.AccountId + "                      " + transaction.TransactionId);
+                                    }
+                                }
+                                break;
+                            case "7":
+                                Console.WriteLine("Enter the account Id whose transaction you want to revert?");
+                                string senderAccountId = Console.ReadLine();
+                                var checkForSender = checkForBankStaff.ElementAt(0).Value.AllAccounts.Where(acc => acc.AccountId.Equals(senderAccountId));
+                                if (!checkForSender.Any())
+                                {
+                                    Console.WriteLine("Invalid Sender ID given");
+                                    break;
+                                }
+                                Console.WriteLine("Enter the reciever account Id you want to revert?");
+                                string recieverAccountId = Console.ReadLine();
+                                Console.WriteLine("Enter reciever's Bank ID:");
+                                string reciverBankId = Console.ReadLine();
+                                Console.WriteLine("Enter the transaction ID that you want to revert?");
+                                string revertTransactionId = Console.ReadLine();
+
+                                StaffServices.RevertTransaction(checkForSender.ElementAt(0), revertTransactionId, currentStaff, checkForBankStaff.ElementAt(0).Value);
+                                break;
+
+                            default:
+                                Console.WriteLine("Invalid choice");
+                                break;
+
                         }
+                        break;
                     }
-
-
-
                 }
-                break;
-            }
+            
+
+
+
+
+            break;
+    }
         case "4":
             Admin newAdmin = new Admin();
             Console.WriteLine("                               *********==========********");

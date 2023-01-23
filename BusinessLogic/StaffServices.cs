@@ -9,8 +9,6 @@ namespace BusinessLogic
 {
     public class StaffServices
     {
-
-
         public static string CreateAccount(string bankName, string firstName, string lastName, string email, string password, string bankId, Staff currentStaff)
 
         {
@@ -28,7 +26,6 @@ namespace BusinessLogic
                 if (currentStaff.BankId.Equals(currentBank.Value.BankId))
                 {
                     currentBank.Value.AllAccounts.Add(newAccount);
-
                     return newAccount.AccountId;
 
                 }
@@ -51,6 +48,12 @@ namespace BusinessLogic
                     var checkForValidAccountId = from acc in currentBank.Value.AllAccounts
                                                  where acc.AccountId == accountID
                                                  select acc;
+                    if (checkForValidAccountId.Any())
+                    {
+                        Console.WriteLine("No such account found.");
+                        return 0;
+                        
+                    }
                     foreach (Customer acc in checkForValidAccountId)
                     {
                         currentBank.Value.AllAccounts.Remove(acc);
@@ -88,57 +91,7 @@ namespace BusinessLogic
             currentBank.IMPSChargesForOther = newIMPSCharges;
 
         }
-        //public static void RevertTransaction(string senderAccountId, string recieverAccountId, string reciverBankId, string transactionId, Staff currentStaff)
-        //{
-        //    var checkForRecieverBank = from bank in Admin.AllBanks
-        //                               where bank.Value.BankId == reciverBankId
-        //                               select bank;
-        //    foreach (var bank in checkForRecieverBank)
-        //    {
-        //        var checkForValidRecieverAccountId = from acc in bank.Value.AllAccounts
-        //                                             where acc.AccountId == recieverAccountId
-        //                                             select acc;
-        //
-        //        foreach (Customer acc in checkForValidRecieverAccountId)
-        //        {
-        //            var checkForValidTransactionId = from transaction in acc.Transactions
-        //                                             where transaction.TransactionId == transactionId
-        //                                             select transaction;
-        //            foreach (Transaction transaction in checkForValidTransactionId)
-        //            {
-        //
-        //                acc.Balance -= transaction.RecievedAmount;
-        //
-        //            }
-        //        }
-        //    }
-        //
-        //    foreach (var currentBank in Admin.AllBanks)
-        //    {
-        //        if (currentStaff.BankId == currentBank.Value.BankId)
-        //        {
-        //            var checkForValidSenderAccountId = from acc in currentBank.Value.AllAccounts
-        //                                               where acc.AccountId == senderAccountId
-        //                                               select acc;
-        //
-        //            foreach (Customer acc in checkForValidSenderAccountId)
-        //            {
-        //                var checkForValidTransactionId = from transaction in acc.Transactions
-        //                                                 where transaction.TransactionId == transactionId
-        //                                                 select transaction;
-        //
-        //                foreach (Transaction transaction in checkForValidTransactionId)
-        //                {
-        //                    acc.Balance += transaction.SentAmount;
-        //
-        //                }
-        //            }
-        //        }
-        //    }
-        //
-        //
-        //}
-
+       
         public static int RevertTransaction(Customer customer,string transactionID,Staff currentStaff,Bank currentBank)
         {
             if (!ValidateCustomer(Admin.AllBanks[currentStaff.BankName],customer) && !ValidateStaff(currentStaff,currentBank)){
@@ -151,7 +104,7 @@ namespace BusinessLogic
                     transaction.Sender.Balance += transaction.SentAmount;
                     transaction.Reciever.Balance -= transaction.RecievedAmount;
                     transaction.Sender.Transactions.Remove(transaction);
-                    transaction.Sender.Transactions.Remove(transaction);
+                    transaction.Reciever.Transactions.Remove(transaction);
                     return 1;
                 }
             }
@@ -174,16 +127,12 @@ namespace BusinessLogic
         public static Boolean ValidateStaff(Staff currentStaff,Bank currentBank)
         {
             var checkForStaff=currentBank.Staff.Where(i=>i.UserName.Equals(currentStaff.UserName));
-            if(checkForStaff.Count() > 0)
+            if(checkForStaff.Any())
             {
                 return true;
             }
             return false;
         }
-
-
-
-
 
 
     }
