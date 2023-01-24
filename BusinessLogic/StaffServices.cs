@@ -17,7 +17,8 @@ namespace BusinessLogic
             string accountHolderName = firstName + " " + lastName;
             DateTime now = DateTime.Now;
             string accountId = accountHolderName.Substring(0, 3) + now.ToString("");
-            Customer newAccount = new Customer(accountHolderName, accountId, balance, bankName, bankId, firstName, password, email);
+            Customer newCustomer = new Customer(accountHolderName, accountId, bankName, bankId, firstName, password, email);
+            Account newAccount = new Account(accountId, balance);
 
 
             foreach (var currentBank in Admin.AllBanks)
@@ -25,7 +26,8 @@ namespace BusinessLogic
 
                 if (currentStaff.BankId.Equals(currentBank.Value.BankId))
                 {
-                    currentBank.Value.AllAccounts.Add(newAccount);
+                    currentBank.Value.AllUsers.Add(newCustomer);
+                    currentBank.Value.Accounts.Add(newAccount);
                     return newAccount.AccountId;
 
                 }
@@ -45,9 +47,10 @@ namespace BusinessLogic
             {
                 if (currentStaff.BankId == currentBank.Value.BankId)
                 {
-                    var checkForValidAccountId = from acc in currentBank.Value.AllAccounts
+                    var checkForValidAccountId = from acc in currentBank.Value.AllUsers
                                                  where acc.AccountId == accountID
                                                  select acc;
+                    
                     if (checkForValidAccountId.Any())
                     {
                         Console.WriteLine("No such account found.");
@@ -56,7 +59,7 @@ namespace BusinessLogic
                     }
                     foreach (Customer acc in checkForValidAccountId)
                     {
-                        currentBank.Value.AllAccounts.Remove(acc);
+                        currentBank.Value.AllUsers.Remove(acc);
                         return 1;
 
 
@@ -92,7 +95,7 @@ namespace BusinessLogic
 
         }
        
-        public static int RevertTransaction(Customer customer,string transactionID,Staff currentStaff,Bank currentBank)
+        public static int RevertTransaction(Account customer,string transactionID,User currentStaff,Bank currentBank)
         {
             if (!ValidateCustomer(Admin.AllBanks[currentStaff.BankName],customer) && !ValidateStaff(currentStaff,currentBank)){
                 return 0;
@@ -113,20 +116,21 @@ namespace BusinessLogic
 
         }
 
-        public static Boolean ValidateCustomer(Bank bank,Customer customer)
+        public static Boolean ValidateCustomer(Bank bank,Account account)
         {
-            foreach(Customer currentCustomer in bank.AllAccounts)
+            var StaffList = bank.AllUsers.Where(i => i.TypeOfUser.Equals(UserType.Customer));
+            foreach(Customer currentCustomer in StaffList)
             {
-                if (customer.AccountId.Equals(currentCustomer.AccountId)){
+                if (account.AccountId.Equals(currentCustomer.AccountId)){
                     return true;
                 }
             }
             return false;
         }
 
-        public static Boolean ValidateStaff(Staff currentStaff,Bank currentBank)
+        public static Boolean ValidateStaff(User currentStaff,Bank currentBank)
         {
-            var checkForStaff=currentBank.Staff.Where(i=>i.UserName.Equals(currentStaff.UserName));
+            var checkForStaff=currentBank.AllUsers.Where(i=>(i.Name.Equals(currentStaff.Name) && (i.TypeOfUser.Equals("staff"))));
             if(checkForStaff.Any())
             {
                 return true;

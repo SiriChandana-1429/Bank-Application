@@ -23,7 +23,7 @@ namespace BusinessLogic
                 {
 
                     Staff newStaff = new Staff(userName, password, bank.Value.BankId, bankName);
-                    bank.Value.Staff.Add(newStaff);
+                    bank.Value.AllUsers.Add(newStaff);
                     return 1;
 
                 }

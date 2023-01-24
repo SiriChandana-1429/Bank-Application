@@ -35,8 +35,11 @@ namespace Models
 
 
         }
-
-        public List<Customer> AllAccounts = new List<Customer>();
-        public List<Staff> Staff = new List<Staff>();
+        
+       
+        public List<User> AllUsers=new List<User>();
+        public List<Account> Accounts=new List<Account>();
+        //public List<Customer> AllAccounts = new List<Customer>();
+        //public List<Staff> Staff = new List<Staff>();
     }
 }

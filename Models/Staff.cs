@@ -8,17 +8,16 @@ namespace Models
 {
     public class Staff:User
     {
-       
-        
-        public Staff(string userName, string password, string bankId, string bankName)
+
+        int salary;
+        public Staff(string name, string password, string bankId, string bankName)
         {
-            this.UserName = userName;
+            this.Name = name;
             this.Password = password;
             this.BankId = bankId;
             this.BankName = bankName;
-
-
+            TypeOfUser = UserType.Staff;
         }
-
+        
     }
 }

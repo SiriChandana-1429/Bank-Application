@@ -11,12 +11,11 @@ namespace Models
         public string TransactionId { get; set; }
         public double SentAmount { get; set; }
         public double RecievedAmount { get; set; }
-        public Customer Reciever { get;set; }
-        public Customer Sender { get; set; }
+        public Account Reciever { get;set; }
+        public Account Sender { get; set; }
 
 
-
-        public Transaction(Customer sender, Customer reciever,double sentAmount,double recievedAmount,string transactionId)
+        public Transaction(Account sender, Account reciever,double sentAmount,double recievedAmount,string transactionId)
         {
             this.Sender=sender;
             this.Reciever = reciever;
@@ -25,7 +24,7 @@ namespace Models
             this.TransactionId = transactionId;
         }
 
-        public Transaction(Customer sender,double amount,Customer reciever,string transactionId)
+        public Transaction(Account sender,double amount,Account reciever,string transactionId)
         {
             this.Sender=sender;
             this.Reciever= reciever;

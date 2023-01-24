@@ -27,13 +27,28 @@ for (; ; )
             Console.WriteLine("Enter Password:");
             string password = Console.ReadLine();
 
-            foreach (var currentBank in Admin.AllBanks)
+            var checkForCustomerBank = from bank in Admin.AllBanks
+                                       where bank.Key.Equals(bankName)
+                                       select bank.Value;
+            if (!checkForCustomerBank.Any())
             {
-
-                var checkForUser = from name in currentBank.Value.AllAccounts
-                                   where name.UserName.Equals(UserName) && name.Password.Equals(password)
+                Console.WriteLine("Incorrect bank name given..!!");
+                break;
+            }
+            
+                var checkForUser = from name in checkForCustomerBank.ElementAt(0).AllUsers
+                                   where name.Name.Equals(UserName) && name.Password.Equals(password)
                                    select name;
-                if (checkForUser.Any())
+                if (!checkForUser.Any())
+                {
+                    Console.WriteLine("User not found..!!");
+                    break;
+                }
+                var checkForAccount = from customer in checkForCustomerBank.ElementAt(0).Accounts
+                                      where customer.AccountId.Equals(checkForUser.ElementAt(0).AccountId)
+                                      select customer;
+            
+                if (checkForAccount.Any())
                 {
                     Console.WriteLine("                             1.Deposit Amount");
                     Console.WriteLine("                             2.Withdraw Amount");
@@ -47,9 +62,9 @@ for (; ; )
                             string amount = Console.ReadLine();
                             foreach (Customer currentHolder in checkForUser)
                             {
-                                int value = CustomerServices.DepositAmount(Convert.ToInt32(amount), currentHolder);
+                                int value = CustomerServices.DepositAmount(Convert.ToInt32(amount), checkForAccount.ElementAt(0));
                                 if (value == 0) Console.WriteLine("Please enter amount more than 0");
-                                else Console.WriteLine("Updated Balance:{0}", currentHolder.Balance);
+                                else Console.WriteLine("Updated Balance:{0}", checkForAccount.ElementAt(0).Balance);
                             }
 
                             break;
@@ -59,9 +74,9 @@ for (; ; )
                             foreach (Customer currentHolder in checkForUser)
                             {
 
-                                int value = CustomerServices.WithDrawAmount(Convert.ToInt32(withDrawamount), currentHolder);
+                                int value = CustomerServices.WithDrawAmount(Convert.ToInt32(withDrawamount), checkForAccount.ElementAt(0));
                                 if (value == 0) Console.WriteLine("Insufficient Funds..!!");
-                                else Console.WriteLine("Updated Balance: " + currentHolder.Balance);
+                                else Console.WriteLine("Updated Balance: " + checkForAccount.ElementAt(0).Balance);
                             }
 
 
@@ -74,33 +89,41 @@ for (; ; )
                                 string recieverBankName = Console.ReadLine();
                                 Console.WriteLine("Enter Account ID to which you want to transfer funds:");
                                 string transferAccount = Console.ReadLine();
-                                var checkForReciever = Admin.AllBanks[recieverBankName].AllAccounts.Where(acc => acc.AccountId.Equals(transferAccount));
+                                var checkForReciever = Admin.AllBanks[recieverBankName].AllUsers.Where(acc =>(acc.TypeOfUser.Equals(UserType.Customer) && acc.AccountId.Equals(transferAccount)));
                                 if (!checkForReciever.Any()) {
-                                    Console.WriteLine("Account is not found..!!");
+                                    Console.WriteLine("User not found..!!");
+                                    break;
+                                }
+                                var checkForRecieverAccount = from acc in Admin.AllBanks[recieverBankName].Accounts
+                                                  where acc.AccountId.Equals(checkForReciever.ToList()[0].AccountId)
+                                                  select acc;
+                                if(!checkForRecieverAccount.Any())
+                                {
+                                    Console.WriteLine("Account not found in current Bank..!!");
                                     break;
                                 }
                                 Console.WriteLine("Enter amount:");
                                 string transferAmount = Console.ReadLine();
 
-                                StaffServices.ValidateCustomer(Admin.AllBanks[recieverBankName], checkForReciever.ElementAt(0));
+                                StaffServices.ValidateCustomer(Admin.AllBanks[recieverBankName], checkForRecieverAccount.ToList()[0]);
                                 Console.WriteLine("Which type of transaction do you want to initiate?");
                                 Console.WriteLine("1.RTGS");
                                 Console.WriteLine("2.IMPS");
                                 string transferType = Console.ReadLine();
-                                int value = CustomerServices.TransferFunds(currentHolder,
-                                                                            checkForReciever.ElementAt(0),
+                                int value = CustomerServices.TransferFunds(checkForAccount.ToList()[0],
+                                                                            checkForRecieverAccount.ToList()[0],
                                                                             Convert.ToInt32(transferAmount),
                                                                                 transferType,
-                                                                                currentBank.Value,
+                                                                                checkForCustomerBank.ElementAt(0),
                                                                                 Admin.AllBanks[recieverBankName]);
                                 if (value == 0) Console.WriteLine("Insufficient funds");
-                                else Console.WriteLine("Updated Balance:{0}", currentHolder.Balance);
+                                else Console.WriteLine("Updated Balance:{0}", checkForAccount.ToList()[0].Balance);
                             }
 
                             break;
                         case "4":
                             Console.WriteLine("             Transaction History");
-                            foreach (Customer name in checkForUser)
+                            foreach (Account name in checkForAccount.ToList())
                             {
                                 Console.WriteLine("Sender ID                Sent Amount                Transaction ID                   Recieved Amount");
                                 foreach (Transaction transaction in name.Transactions)
@@ -112,6 +135,7 @@ for (; ; )
 
                             break;
                     }
+                    break;
                 }
                 else
                 {
@@ -124,9 +148,9 @@ for (; ; )
 
 
 
-            }
+            //}
 
-            break;
+            //break;
 
         case "2":
             {
@@ -147,14 +171,21 @@ for (; ; )
                     break;
                 }
 
+                var checkForBankStaffAccount = from name in checkForBankStaff.ElementAt(0).Value.AllUsers
+                                   where name.TypeOfUser.Equals(UserType.Staff)
+                                   select name;
+                if (!checkForBankStaffAccount.Any())
+                {
+                    Console.WriteLine("Staff not found");
+                    break;
+                }
 
-
-                var checkForStaff = from name in checkForBankStaff.ElementAt(0).Value.Staff
-                                    where name.UserName.Equals(staffUserName) && name.Password.Equals(staffPassword)
+                var checkForStaff = from name in checkForBankStaffAccount
+                                    where name.Name.Equals(staffUserName) && name.Password.Equals(staffPassword)
                                     select name;
                 if (!checkForStaff.Any())
                 {
-                    Console.WriteLine("Staff not found.");
+                    Console.WriteLine("Incorrect credentials were given!!");
                 }
                 else
                 {
@@ -240,7 +271,7 @@ for (; ; )
                                     Console.WriteLine("This bank staff is not authorised to view this account transaction history..");
                                     break;
                                 }
-                                foreach (Customer currentAccount in checkForBank.ElementAt(0).Value.AllAccounts)
+                                foreach (Account currentAccount in checkForBank.ElementAt(0).Value.Accounts)
                                 {
 
                                     Console.WriteLine("SenderId                 Amount                 ReceiverID                  Transaction ID");
@@ -253,7 +284,7 @@ for (; ; )
                             case "7":
                                 Console.WriteLine("Enter the account Id whose transaction you want to revert?");
                                 string senderAccountId = Console.ReadLine();
-                                var checkForSender = checkForBankStaff.ElementAt(0).Value.AllAccounts.Where(acc => acc.AccountId.Equals(senderAccountId));
+                                var checkForSender = checkForBankStaff.ElementAt(0).Value.Accounts.Where(acc => acc.AccountId.Equals(senderAccountId));
                                 if (!checkForSender.Any())
                                 {
                                     Console.WriteLine("Invalid Sender ID given");
