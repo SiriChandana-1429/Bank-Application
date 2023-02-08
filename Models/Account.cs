@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,14 +10,19 @@ namespace Models
 {
     public class Account
     {
-        
+
+        [Key]
         public string AccountId { get; set; }
-        public double Balance { get; set; }
+        [Required]
+        [ForeignKey("User")]
+        public string UserId { get; set; }
+        [Required]
+        public float Balance { get; set; }
 
-        public List<Transaction> Transactions = new List<Transaction>();
+        public ICollection<Transaction> Transactions;
 
         
-        public Account(string accountId,double balance)
+        public Account(string accountId,float balance)
         { 
             this.AccountId= accountId;
             this.Balance = balance;

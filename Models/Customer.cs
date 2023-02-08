@@ -10,13 +10,13 @@ namespace Models
     {
        
         
-        //public Customer() { }
-        public Customer(string name, string accountId, string bankName, string bankId, string userName, string password, string email)
+        
+        public Customer(string name, string accountId, string bankName, string bankId, string userId, string password, string email)
         {
             this.AccountId = accountId;
             this.BankName = bankName;
             this.BankId = bankId;
-            this.Name = name;
+            this.UserId = userId;
             this.Password = password;
             this.Email = email;
             TypeOfUser = UserType.Customer;

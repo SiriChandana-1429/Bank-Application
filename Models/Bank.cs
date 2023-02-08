@@ -8,23 +8,22 @@ namespace Models
 {
     public class Bank
     {
+        public string? BankId { get; set; }
         public string BankName { get; set; }
         public string? Location { get; set; }
-        public string? BankId { get; set; }
-
-        public double RTGSChargesForSame = 0;
-        public double RTGSChargesForOther = 0.02;
-        public double IMPSChargesForSame = 0.05;
-        public double IMPSChargesForOther = 0.06;
-        public static Dictionary<string, int> AcceptedCurrencies = new Dictionary<string, int>
-        {
-            {"INR", 1 } ,
-            {"USD",80 },
-            {"EUR",90 }
-        };
-
 
         public string? Currency;
+        public float RTGSChargesForSame { get; set; } = 0f;
+        public float RTGSChargesForOther { get; set; } = 0.02f;
+        public float IMPSChargesForSame { get; set; } = 0.05f;
+        public float IMPSChargesForOther { get; set; } = 0.06f;
+
+        public ICollection<AcceptedCurrency> AcceptedCurrencies { get; set; }
+        public ICollection<User> Users;
+        public ICollection<Account> Accounts;
+  
+        
+        public Bank() { }
         public Bank(string bankName, string bankLocation, string currency)
         {
             this.Location = bankLocation;
@@ -35,11 +34,8 @@ namespace Models
 
 
         }
-        
+
        
-        public List<User> AllUsers=new List<User>();
-        public List<Account> Accounts=new List<Account>();
-        //public List<Customer> AllAccounts = new List<Customer>();
-        //public List<Staff> Staff = new List<Staff>();
+        
     }
 }

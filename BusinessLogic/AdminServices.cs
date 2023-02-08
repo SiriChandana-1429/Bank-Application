@@ -1,4 +1,5 @@
-﻿using Models;
+﻿using DataAccessLayer;
+using Models;
 
 namespace BusinessLogic
 {
@@ -6,44 +7,45 @@ namespace BusinessLogic
     public class AdminServices
     {
 
-
+        static BankDataBaseContext bankDBContext=new BankDataBaseContext();
         public static void CreateBank(string bankName, string bankLocation, string currency)
         {
 
             Bank newBank = new Bank(bankName, bankLocation, currency);
-            Admin.AllBanks.Add(bankName, newBank);
-
+            bankDBContext.Banks.Add(newBank);
+            Console.WriteLine(newBank.BankId);
+            Console.WriteLine(bankDBContext.Banks.Where(i => i.BankId.Equals(newBank.BankId)).ElementAt(0).BankName);
         }
         public static int CreateStaff(string bankName, string userName, string password)
         {
-
-            foreach (var bank in Admin.AllBanks)
+            var currentBank = bankDBContext.Banks.Where(i => i.BankName.Equals(bankName));
+            if(!currentBank.Any() )
             {
-                if (bank.Key == bankName)
-                {
-
-                    Staff newStaff = new Staff(userName, password, bank.Value.BankId, bankName);
-                    bank.Value.AllUsers.Add(newStaff);
-                    return 1;
-
-                }
-
+                return 0;
             }
-            return 0;
+            else
+            {
+                DateTime now = DateTime.Now;
+                string accountId = userName.Substring(0, 3) + now.ToString("");
+                User user = new User(accountId, password, currentBank.ElementAt(0).BankId, bankName);
+                bankDBContext.Users.Add(user);
+                return 1;
+            }
+            
 
         }
-        public static void ChangeCurrency(string currency, string bankName)
-        {
+        //public static void ChangeCurrency(string currency, string bankName)
+        //{
 
-            foreach (var bank in Admin.AllBanks)
-            {
-                if (bank.Key == bankName)
-                {
-                    bank.Value.Currency = currency;
-                }
-            }
+        //    foreach (var bank in BankRepository.AllBanks)
+        //    {
+        //        if (bank.Key == bankName)
+        //        {
+        //            bank.Value.Currency = currency;
+        //        }
+        //    }
 
-        }
+        //}
 
 
     }
