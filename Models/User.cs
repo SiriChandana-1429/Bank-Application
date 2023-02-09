@@ -24,13 +24,14 @@ namespace Models
         public UserType TypeOfUser { get; set; }
 
         public User() { }
-        public User(string userId,string password,string bankId,string bankName)
+        public User(string userId,string password,string bankId,string bankName,string email)
         {
             this.AccountId = "";
             this.UserId=userId;
             this.Password=password;
             this.BankId=bankId;
             this.BankName=bankName;
+            this.Email = email;
             this.TypeOfUser = UserType.Staff;
 
         }

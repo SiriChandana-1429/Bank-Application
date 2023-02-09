@@ -18,7 +18,7 @@ namespace Models
         public float IMPSChargesForSame { get; set; } = 0.05f;
         public float IMPSChargesForOther { get; set; } = 0.06f;
 
-        public ICollection<AcceptedCurrency> AcceptedCurrencies { get; set; }
+        
         public ICollection<User> Users;
         public ICollection<Account> Accounts;
   
@@ -31,6 +31,8 @@ namespace Models
             this.BankName = bankName;
             DateTime now = DateTime.Now;
             this.BankId = bankName.Substring(0, 3) + now.ToString("");
+            
+            
 
 
         }

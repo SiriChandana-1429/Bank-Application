@@ -17,9 +17,7 @@ namespace Models
             this.Name= name;
             this.Value= value;
         }
-        public AcceptedCurrency()
-        {
-
-        }
+        
+        
     }
 }

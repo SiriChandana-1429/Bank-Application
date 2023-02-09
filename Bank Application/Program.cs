@@ -8,8 +8,15 @@ using BusinessLogic;
 using DataAccessLayer;
 
 BankDataBaseContext bankDbContext=new BankDataBaseContext();
+bankDbContext.Add(new AcceptedCurrency("USD", 80f));
+bankDbContext.Add(new AcceptedCurrency("INR", 1f));
+bankDbContext.Add(new AcceptedCurrency("EUR", 90f));
+bankDbContext.SaveChanges();
+
+
 while (true)
 {
+
     Console.WriteLine("                                  *******====================*******");
     Console.WriteLine("                                         1.Account Holder");
     Console.WriteLine("                                         2.Bank Staff");
@@ -28,22 +35,22 @@ while (true)
                 Console.WriteLine("Enter Password:");
                 string password = Console.ReadLine();
 
-                var checkForCustomerBank = bankDbContext.Banks.Where(i => i.BankId.Equals(bankId));
+                List<Bank> checkForCustomerBank = bankDbContext.Banks.Where(i => i.BankId.Equals(bankId)).ToList();
 
-                if (!checkForCustomerBank.Any())
+                if (!(checkForCustomerBank.Count()>0))
                 {
                     Console.WriteLine("Incorrect bank name given..!!");
                     break;
                 }
-                var checkForUser = checkForCustomerBank.ElementAt(0).Users.Where(i => (i.UserId.Equals(UserName) && (i.Password.Equals(password))));
-                if (!checkForUser.Any())
+                List<User> checkForUser = bankDbContext.Users.Where(i => (i.UserId.Equals(UserName) && (i.Password.Equals(password)))).ToList();
+                if (!(checkForUser.Count>0))
                 {
                     Console.WriteLine("User not found..!!");
                     break;
                 }
-                var checkForAccount = checkForCustomerBank.ElementAt(0).Accounts.Where(i => i.AccountId.Equals(checkForUser.ElementAt(0).AccountId));
+                List<Account> checkForAccount = bankDbContext.Accounts.Where(i => i.AccountId.Equals(checkForUser[0].AccountId)).ToList();
 
-                if (checkForAccount.Any())
+                if (checkForAccount.Count()>0)
                 {
                     Console.WriteLine("                             1.Deposit Amount");
                     Console.WriteLine("                             2.Withdraw Amount");
@@ -55,16 +62,16 @@ while (true)
                         case "1":
                             Console.WriteLine("                     Enter amount:");
                             string amount = Console.ReadLine();
-                            foreach (Customer currentHolder in checkForUser)
+                            foreach (User currentHolder in checkForUser)
                             {
-                                int value = CustomerServices.DepositAmount(Convert.ToInt32(amount), checkForAccount.ElementAt(0).AccountId);
+                                int value = CustomerServices.DepositAmount(Convert.ToInt32(amount), checkForAccount[0].AccountId);
                                 if (value == 0)
                                 {
                                     Console.WriteLine("Please enter amount more than 0");
                                 }
                                 else
                                 {
-                                    Console.WriteLine("Updated Balance:{0}", checkForAccount.ElementAt(0).Balance);
+                                    Console.WriteLine("Updated Balance:{0}", checkForAccount[0].Balance);
                                 }
                             }
 
@@ -72,40 +79,41 @@ while (true)
                         case "2":
                             Console.WriteLine("              Enter the amount you want to withdraw:");
                             string withDrawamount = Console.ReadLine();
-                            foreach (Customer currentHolder in checkForUser)
+                            foreach (User currentHolder in checkForUser)
                             {
 
-                                int value = CustomerServices.WithDrawAmount(Convert.ToInt32(withDrawamount), checkForAccount.ElementAt(0).AccountId);
+                                int value = CustomerServices.WithDrawAmount(Convert.ToInt32(withDrawamount), checkForAccount[0].AccountId);
                                 if (value == 0)
                                 {
                                     Console.WriteLine("Insufficient Funds..!!");
                                 }
                                 else
                                 {
-                                    Console.WriteLine("Updated Balance: " + checkForAccount.ElementAt(0).Balance);
+                                    Console.WriteLine("Updated Balance: " + checkForAccount[0].Balance);
                                 }
                             }
 
 
                             break;
                         case "3":
-                            foreach (Customer currentHolder in checkForUser)
+                            foreach (User currentHolder in checkForUser)
                             {
 
                                 Console.WriteLine("Enter Reciever's Bank ID:");
                                 string recieverBankID = Console.ReadLine();
                                 Console.WriteLine("Enter Account ID to which you want to transfer funds:");
                                 string transferAccount = Console.ReadLine();
-                                var checkForReciever = bankDbContext.Users.Where(acc => (acc.TypeOfUser.Equals(UserType.Customer) && acc.AccountId.Equals(transferAccount)));
+                                List<User> checkForReciever = bankDbContext.Users.Where(acc => (acc.TypeOfUser.Equals(UserType.Customer) && acc.AccountId.Equals(transferAccount))).ToList();
                                 if (!checkForReciever.Any())
                                 {
                                     Console.WriteLine("User not found..!!");
                                     break;
                                 }
-                                var checkForRecieverAccount = from acc in bankDbContext.Users
-                                                              where acc.AccountId.Equals(checkForReciever.ToList()[0].AccountId)
-                                                              select acc;
-                                if (!checkForRecieverAccount.Any())
+                                List<User> checkForRecieverAccount = bankDbContext.Users.Where(i => i.AccountId.Equals(checkForReciever[0].AccountId)).ToList();
+                                //var checkForRecieverAccount = from acc in bankDbContext.Users
+                                //                              where acc.AccountId.Equals(checkForReciever.ToList()[0].AccountId)
+                                //                              select acc;
+                                if (!(checkForRecieverAccount.Count()>0))
                                 {
                                     Console.WriteLine("Account not found in current Bank..!!");
                                     break;
@@ -113,7 +121,7 @@ while (true)
                                 Console.WriteLine("Enter amount:");
                                 string transferAmount = Console.ReadLine();
 
-                                StaffServices.ValidateCustomer(recieverBankID, checkForRecieverAccount.ElementAt(0).AccountId);
+                                StaffServices.ValidateCustomer(recieverBankID, checkForRecieverAccount[0].AccountId);
                                 Console.WriteLine("Which type of transaction do you want to initiate?");
                                 Console.WriteLine("1.RTGS");
                                 Console.WriteLine("2.IMPS");
@@ -131,14 +139,14 @@ while (true)
                                 }
                                 else
                                 {
-                                    Console.WriteLine("Updated Balance:{0}", checkForAccount.ToList()[0].Balance);
+                                    Console.WriteLine("Updated Balance:{0}", checkForAccount[0].Balance);
 
                                 }
                             }
                             break;
                         case "4":
 
-                            var transactionList = bankDbContext.Transactions.Where(i => (i.SenderId.Equals(checkForAccount.ElementAt(0).AccountId)) || (i.RecieverId.Equals(checkForAccount.ElementAt(0).AccountId)));
+                            var transactionList = bankDbContext.Transactions.Where(i => (i.SenderId.Equals(checkForAccount[0].AccountId)) || (i.RecieverId.Equals(checkForAccount[0].AccountId)));
                             Console.WriteLine("             Transaction History");
                             Console.WriteLine("Sender ID                Sent Amount                Transaction ID                   Recieved Amount");
                             foreach (Transaction transaction in transactionList)
@@ -168,14 +176,14 @@ while (true)
                 Console.WriteLine("Enter Password:");
                 string staffPassword = Console.ReadLine();
 
-                var checkForBankStaff = bankDbContext.Banks.Where(i => i.BankId.Equals(staffBank));
+                //List<Bank> checkForBankStaff = bankDbContext.Banks.Where(i => i.BankId.Equals(staffBank)).ToList();
                
-                if (!checkForBankStaff.Any())
-                {
-                    Console.WriteLine("Entered Bank ID not found..!!");
-                    break;
-                }
-                var checkForStaff = checkForBankStaff.ElementAt(0).Users.Where(i => (i.UserId.Equals(staffUserName)) && (i.Password.Equals(staffPassword)));
+                //if (!(checkForBankStaff.Count>0))
+                //{
+                //    Console.WriteLine("Entered Bank ID not found..!!");
+                //    break;
+                //}
+                List<User> checkForStaff = bankDbContext.Users.Where(i => (i.UserId.Equals(staffUserName)) && (i.Password.Equals(staffPassword))).ToList();
                 if (!checkForStaff.Any())
                 {
                     Console.WriteLine("Incorrect credentials were given!!");
@@ -186,7 +194,7 @@ while (true)
                     {
 
                         Console.Write("Your Bank ID is:");
-                        Console.WriteLine(checkForBankStaff.ElementAt(0).BankId);
+                        Console.WriteLine(currentStaff.BankId);
                         Console.WriteLine("--------------------*****------------------------");
                         Console.WriteLine("--------------------*****------------------------");
                         Console.WriteLine("            1.Create new Account");
@@ -211,7 +219,7 @@ while (true)
                                 string accountPassword = Console.ReadLine();
                                 Console.WriteLine("Bank ID:");
                                 string bankID = Console.ReadLine();
-                                string returnValue = StaffServices.CreateAccount(checkForBankStaff.ElementAt(0).BankName, firstName, lastName, email, accountPassword, bankID, currentStaff.UserId);
+                                string returnValue = StaffServices.CreateAccount(currentStaff.BankName, firstName, lastName, email, accountPassword, bankID, currentStaff.UserId);
                                 if (returnValue == "0")
                                 {
                                     Console.WriteLine("Invalid bank Id given.");
@@ -240,7 +248,7 @@ while (true)
                                 string newCurrency = Console.ReadLine();
                                 Console.WriteLine("Enter the value of the new currency:");
                                 int newCurrencyValue = Convert.ToInt32(Console.ReadLine());
-                                returnValueInt = StaffServices.AddNewCurrency(newCurrency.ToUpper(), newCurrencyValue);
+                                returnValueInt = StaffServices.AddNewCurrency(newCurrency.ToUpper(), newCurrencyValue, checkForStaff[0].BankId);
                                 if (returnValueInt == 0)
                                 {
                                     Console.WriteLine("Currency already exists");
@@ -260,20 +268,20 @@ while (true)
                                 float newRTGSCharges = float.Parse(Console.ReadLine());
                                 Console.WriteLine("Enter new IMPS Charges:");
                                 float newIMPSCharges = float.Parse(Console.ReadLine());
-                                StaffServices.UpdateChargesForSameBank(checkForBankStaff.ElementAt(0).BankId, newRTGSCharges, newIMPSCharges);
+                                StaffServices.UpdateChargesForSameBank(checkForStaff.ElementAt(0).BankId, newRTGSCharges, newIMPSCharges);
                                 break;
                             case "5":
                                 Console.WriteLine("Enter new RTGS Charges:");
                                 newRTGSCharges = float.Parse(Console.ReadLine());
                                 Console.WriteLine("Enter new IMPS Charges:");
                                 newIMPSCharges = float.Parse(Console.ReadLine());
-                                StaffServices.UpdateChargesForOtherBank(checkForBankStaff.ElementAt(0).BankId, newRTGSCharges, newIMPSCharges);
+                                StaffServices.UpdateChargesForOtherBank(checkForStaff.ElementAt(0).BankId, newRTGSCharges, newIMPSCharges);
 
                                 break;
                             case "6":
                                 Console.WriteLine("Enter account ID to view transaction:");
                                 string viewAccountTransaction = Console.ReadLine();
-                                var checkForBank = bankDbContext.Banks.Where(i => i.BankId.Equals(checkForBankStaff.ElementAt(0).BankId));
+                                var checkForBank = bankDbContext.Banks.Where(i => i.BankId.Equals(checkForStaff.ElementAt(0).BankId));
 
                                 if (checkForBank == null)
                                 {
@@ -291,7 +299,7 @@ while (true)
                             case "7":
                                 Console.WriteLine("Enter the account Id whose transaction you want to revert?");
                                 string senderAccountId = Console.ReadLine();
-                                var checkForSender = checkForBankStaff.ElementAt(0).Accounts.Where(acc => acc.AccountId.Equals(senderAccountId));
+                                var checkForSender = bankDbContext.Accounts.Where(acc => acc.AccountId.Equals(senderAccountId));
                                 if (!checkForSender.Any())
                                 {
                                     Console.WriteLine("Invalid Sender ID given");
@@ -304,7 +312,7 @@ while (true)
                                 Console.WriteLine("Enter the transaction ID that you want to revert?");
                                 string revertTransactionId = Console.ReadLine();
 
-                                StaffServices.RevertTransaction(checkForSender.ElementAt(0).AccountId, revertTransactionId, currentStaff.UserId, checkForBankStaff.ElementAt(0).BankId);
+                                StaffServices.RevertTransaction(checkForSender.ElementAt(0).AccountId, revertTransactionId, currentStaff.UserId, checkForStaff.ElementAt(0).BankId);
                                 break;
 
                             default:
@@ -348,7 +356,9 @@ while (true)
                         string userName = Console.ReadLine();
                         Console.WriteLine("Enter password:");
                         string staffPassword = Console.ReadLine();
-                        int returnValue = AdminServices.CreateStaff(newStaffBank, userName, staffPassword);
+                        Console.WriteLine("Enter email:");
+                        string email=Console.ReadLine();
+                        int returnValue = AdminServices.CreateStaff(newStaffBank, userName, staffPassword,email);
                         if (returnValue == 0)
                         {
                             Console.Write("Bank doesn't exists");

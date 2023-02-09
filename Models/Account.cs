@@ -22,10 +22,11 @@ namespace Models
         public ICollection<Transaction> Transactions;
 
         
-        public Account(string accountId,float balance)
+        public Account(string accountId,float balance,string userId)
         { 
             this.AccountId= accountId;
             this.Balance = balance;
+            this.UserId= userId;
         }
 
     }

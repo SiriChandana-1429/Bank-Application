@@ -26,10 +26,11 @@ namespace BusinessLogic
             string accountId = accountHolderName.Substring(0, 3) + now.ToString("");
             now = DateTime.Now;
             string userId = now.ToString("");
-            Customer newCustomer = new Customer(accountHolderName, accountId, bankName, bankId, userId, password, email);
-            Account newAccount = new Account(accountId, balance);
+            User newCustomer = new User(accountHolderName, accountId, bankName, bankId, userId, password, email);
+            Account newAccount = new Account(accountId, balance,userId);
             bankDbContext.Users.Add(newCustomer);
             bankDbContext.Accounts.Add(newAccount);
+            bankDbContext.SaveChanges();
             return newAccount.AccountId;
 
         }
@@ -49,6 +50,7 @@ namespace BusinessLogic
             
 
             bankDbContext.Accounts.Remove(accountObject.ElementAt(0));
+            bankDbContext.SaveChanges();
             return 1;
 
 
@@ -59,7 +61,7 @@ namespace BusinessLogic
     
 
 
-        public static int AddNewCurrency(string newCurrency, int newCurrencyValue)
+        public static int AddNewCurrency(string newCurrency, int newCurrencyValue,string bankId)
         {
             var currencyCheck = bankDbContext.AcceptedCurrencies.Where(i => i.Name.Equals(newCurrency));
             if (currencyCheck.Any())
@@ -71,10 +73,11 @@ namespace BusinessLogic
             {
                 return 1;
             }
-            AcceptedCurrency acceptedCurrency = new AcceptedCurrency();
-            acceptedCurrency.Name = newCurrency;
-            acceptedCurrency.Value=newCurrencyValue;
+            AcceptedCurrency acceptedCurrency = new AcceptedCurrency(newCurrency,newCurrencyValue);
+            BankCurrency bankCurrency = new BankCurrency(newCurrency, bankId);
             bankDbContext.AcceptedCurrencies.Add(acceptedCurrency);
+            bankDbContext.BankCurrencies.Add(bankCurrency);
+            bankDbContext.SaveChanges();
             return 2;
         }
 
@@ -87,6 +90,7 @@ namespace BusinessLogic
             }
             bankObject.ElementAt(0).RTGSChargesForSame = newRTGSCharges;
             bankObject.ElementAt(0).IMPSChargesForSame = newIMPSCharges;
+            bankDbContext.SaveChanges();
         }
 
 
@@ -99,6 +103,7 @@ namespace BusinessLogic
             }
             bankObject.ElementAt(0).RTGSChargesForOther = newRTGSCharges;
             bankObject.ElementAt(0).IMPSChargesForOther = newIMPSCharges;
+            bankDbContext.SaveChanges();
 
         }
        
@@ -119,6 +124,7 @@ namespace BusinessLogic
                 senderObject.ElementAt(0).Balance += transactionObject.ElementAt(0).SentAmount;
                 recieverObject.ElementAt(0).Balance-=transactionObject.ElementAt(0).RecievedAmount;
                 bankDbContext.Transactions.Remove(transactionObject.ElementAt(0));
+                bankDbContext.SaveChanges();
                 return 1;
             }
             

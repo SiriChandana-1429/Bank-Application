@@ -26,15 +26,10 @@ namespace DataAccessLayer.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("BankId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<float>("Value")
                         .HasColumnType("real");
 
                     b.HasKey("Name");
-
-                    b.HasIndex("BankId");
 
                     b.ToTable("AcceptedCurrencies");
                 });
@@ -83,6 +78,24 @@ namespace DataAccessLayer.Migrations
                     b.HasKey("BankId");
 
                     b.ToTable("Banks");
+                });
+
+            modelBuilder.Entity("Models.BankCurrency", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("BankId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BankCurrencies");
                 });
 
             modelBuilder.Entity("Models.Transaction", b =>
@@ -140,18 +153,6 @@ namespace DataAccessLayer.Migrations
                     b.HasKey("UserId");
 
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("Models.AcceptedCurrency", b =>
-                {
-                    b.HasOne("Models.Bank", null)
-                        .WithMany("AcceptedCurrencies")
-                        .HasForeignKey("BankId");
-                });
-
-            modelBuilder.Entity("Models.Bank", b =>
-                {
-                    b.Navigation("AcceptedCurrencies");
                 });
 #pragma warning restore 612, 618
         }

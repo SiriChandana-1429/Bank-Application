@@ -11,6 +11,18 @@ namespace DataAccessLayer.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "AcceptedCurrencies",
+                columns: table => new
+                {
+                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Value = table.Column<float>(type: "real", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AcceptedCurrencies", x => x.Name);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Accounts",
                 columns: table => new
                 {
@@ -21,6 +33,19 @@ namespace DataAccessLayer.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Accounts", x => x.AccountId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "BankCurrencies",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BankId = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BankCurrencies", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -71,29 +96,6 @@ namespace DataAccessLayer.Migrations
                 {
                     table.PrimaryKey("PK_Users", x => x.UserId);
                 });
-
-            migrationBuilder.CreateTable(
-                name: "AcceptedCurrencies",
-                columns: table => new
-                {
-                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Value = table.Column<float>(type: "real", nullable: false),
-                    BankId = table.Column<string>(type: "nvarchar(450)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AcceptedCurrencies", x => x.Name);
-                    table.ForeignKey(
-                        name: "FK_AcceptedCurrencies_Banks_BankId",
-                        column: x => x.BankId,
-                        principalTable: "Banks",
-                        principalColumn: "BankId");
-                });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AcceptedCurrencies_BankId",
-                table: "AcceptedCurrencies",
-                column: "BankId");
         }
 
         /// <inheritdoc />
@@ -106,13 +108,16 @@ namespace DataAccessLayer.Migrations
                 name: "Accounts");
 
             migrationBuilder.DropTable(
+                name: "BankCurrencies");
+
+            migrationBuilder.DropTable(
+                name: "Banks");
+
+            migrationBuilder.DropTable(
                 name: "Transactions");
 
             migrationBuilder.DropTable(
                 name: "Users");
-
-            migrationBuilder.DropTable(
-                name: "Banks");
         }
     }
 }
